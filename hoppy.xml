@@ -23,21 +23,20 @@
   </asset>
 
   <worldbody>
-     <light directional="true" pos="0 0 5" dir="0 0 -1"/>
+    <light name="top" pos="0 0 2" dir="0 0 -1" diffuse="0.8 0.8 0.8" specular="0.5 0.5 0.5" />
+    <light name="ambient" pos="0 0 10" dir="0 0 -1" diffuse="0.5 0.5 0.5" specular="0.0 0.0 0.0" />
 
     <geom name="floor" type="plane" size="5 5 0.1" pos="0 0 0.99"
       solref="0.005 1"
-      solimp="1 1 0.001"
-      friction="0.99 0.02 0.001"/>
+      solimp="0.9 0.95 0.001 0.5 2"
+      friction="1.0 0.02 0.001"/>
 
-    <!-- BASE: placa fija del gantry -->
-    <body name="base" pos="0 -0.5 1.0">
+    <body name="base" pos="0 0 1.0">
       <inertial pos="0.025 -2.096e-4 -0.05"
                 mass="0.155"
                 fullinertia="4.832e-4 4.793e-4 2.892e-4 -7.479e-11 2.634e-8 -2.689e-8"/>
       <geom type="mesh" mesh="base" contype="0" conaffinity="0"/>
 
-      <!-- LINK1: brazo horizontal del gantry (rotacion yaw) -->
       <body name="link1" pos="0 0 0">
         <joint name="gantry_rotation" type="hinge" axis="0 0 1"
                damping="0.1" armature="0.0"/>
@@ -46,7 +45,6 @@
                   fullinertia="0.001 0.001 1.691e-4 -4.298e-10 -1.019e-9 -6.170e-6"/>
         <geom type="mesh" mesh="link1"/>
 
-        <!-- LINK2: brazo del gantry con pitch (incluye masa del motor hip) -->
         <body name="link2" pos="0 0 0.19">
           <joint name="gantry_pitch" type="hinge" axis="1 0 0"
                 range="-1.5708 1.5708" damping="0.5" armature="0.0"/>
@@ -56,39 +54,31 @@
                     fullinertia="0.046 0.001 0.047 0.003 2.421e-6 -4.776e-5"/>
           <geom type="mesh" mesh="link2"/>
 
-          <!-- CONTRAPESO -->
           <body name="counterweight" pos="-0.005 0.270 0">
-            <geom type="sphere" size="0.05" mass="1.6"
+            <geom type="sphere" size="0.05" mass="1.65"
               contype="0" conaffinity="0"/>
           </body>
 
-          <!-- LINK3: muslo -->
           <body name="link3" pos="0.058 -0.576 0">
             <joint name="hip" type="hinge" axis="0 1 0"
                    range="-1.5708 1.5708"
-                   damping="0.03943"
-                   armature="0.003835"/>
+                   damping="0.140"
+                   armature="0.0050652"/>
             <inertial pos="0.0145 0.0315 -0.005"
                      mass="0.512"
                      fullinertia="0.001 0.001 0.001 -3.387e-4 -9.783e-6 -6.901e-6"/>
             <geom type="mesh" mesh="link3" pos="0.0475 0.0215 0"/>
 
-            <!--
-              LINK4: pierna (shank)
-              quat rota el frame -90° en Y para que knee=0 sea pierna
-              extendida hacia abajo. La inercia (fullinertia) no cambia
-              porque está definida en el frame del body y rota con él.
-              Antes: knee=0 → L,  knee=-1.57 → extendida
-              Ahora: knee=0 → extendida,  knee=-1.57 → flexionada
-            -->
             <body name="link4" pos="0.096 0.0215 0"
                   quat="0.7071 0 -0.7071 0">
+
+                  <!--armature="0.0050652"-->
               <joint name="knee" type="hinge" axis="0 1 0"
                      range="0 3.1416"
-                     damping="0.03943"
-                     armature="0.003835"
-                     stiffness="0.643"
-                     springref="0.0"/>
+                     damping="0.140"
+                     armature="0.0050652"
+                     stiffness="1.1"
+                     springref="0"/>
               <inertial pos="-0.002 -0.025 -0.008"
                         mass="0.092"
                         fullinertia="2.305e-4 1.871e-4 6.687e-5 1.703e-6 1.882e-6 -1.875e-5"/>
@@ -103,18 +93,17 @@
 
               <site name="foot_site" pos="0.052 0 -0.150" size="0.005"/>
 
-              <!-- SENSOR DE CONTACTO ANÁLOGO -->
               <body name="foot_sensor_body" pos="0.052 -0.0125 -0.1455">
                 <joint name="foot_spring" type="slide" axis="0 0 -1"
-                       range="-0.005 0.0"
-                       stiffness="1"
+                       range="-0.02 0.0"
+                       stiffness="2"
                        damping="0.2"
                        springref="0.0"/>
                 <inertial pos="0 0 0"
                           mass="0.005"
                           diaginertia="1e-6 1e-6 1e-6"/>
                 <geom name="foot_sensor_cylinder" type="cylinder"
-                      size="0.002 0.016"
+                      size="0.002 0.020"
                       pos="0 0 0"
                       contype="1" conaffinity="1"
                       solref="0.005 1"
